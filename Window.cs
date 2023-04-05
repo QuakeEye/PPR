@@ -302,7 +302,6 @@ public class Window : GameWindow {
 
         renderFunctions.Add(function);
     }
-    
     /// <summary>
     /// Subscribe a function to a specific place in the list of render functions
     /// </summary>
