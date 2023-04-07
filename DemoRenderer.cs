@@ -11,12 +11,15 @@ namespace Demo;
 /// </summary>
 public class DemoRenderer : Renderer {
 
-    Random random = new Random();
+    Random random;
 
 
     public DemoRenderer() : base() { }
 
-    public override void Init() { }
+    public override void Init() { 
+
+        random = new Random();
+    }
 
     public override void Update() { 
 

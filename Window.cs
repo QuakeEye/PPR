@@ -44,9 +44,9 @@ public class Window : GameWindow {
     readonly float[] vertices =
     { //  X      Y     Z     U     V
         -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left  2-----3 triangles:
-            1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // bottom-right | \   |     012
+        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  // bottom-right | \   |     012
         -1.0f,  1.0f, 0.0f, 0.0f, 0.0f, // top-left     |   \ |     123
-            1.0f,  1.0f, 0.0f, 1.0f, 0.0f, // top-right    0-----1
+        1.0f,  1.0f, 0.0f, 1.0f, 0.0f,  // top-right    0-----1
     };
 
 
