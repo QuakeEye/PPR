@@ -292,6 +292,16 @@ public class Window : GameWindow {
 
         updateFunctions.Add(function);
     }
+    
+    /// <summary>
+    /// Subscribe a function to the list of update functions at a specific place
+    /// </summary>
+    /// <param name="function">The function to be called</param>
+    /// <param name="index">The index to insert the function at</param>
+    public void SubscribeUpdateAt(Action function, int index) {
+
+        updateFunctions.Insert(index, function);
+    }
 
 
     /// <summary>
@@ -302,12 +312,13 @@ public class Window : GameWindow {
 
         renderFunctions.Add(function);
     }
+    
     /// <summary>
     /// Subscribe a function to a specific place in the list of render functions
     /// </summary>
     /// <param name="function">The function to be called</param>
     /// <param name="index">The index to insert the function at</param>
-    public void SubscribeRender(Action function, int index) {
+    public void SubscribeRenderAt(Action function, int index) {
 
         renderFunctions.Insert(index, function);
     }
