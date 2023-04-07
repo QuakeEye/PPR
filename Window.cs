@@ -54,8 +54,8 @@ public class Window : GameWindow {
     /// Constructor for the window class
     /// </summary>
     /// <param name="size">The size of the window</param>
-    public Window(Vector2i size) 
-        : base (GameWindowSettings.Default, new NativeWindowSettings() 
+    public Window(Vector2i size)
+        : base (GameWindowSettings.Default, new NativeWindowSettings()
         {
             Size = size,
             Title = "Per-Pixel Rendering"
@@ -66,7 +66,7 @@ public class Window : GameWindow {
     /// Called when the window is created
     /// </summary>
     protected override void OnLoad() {
-        
+
         base.OnLoad();
 
         // Application is initialised empty
@@ -94,7 +94,7 @@ public class Window : GameWindow {
     /// It should be ignored by the user of the template
     /// </summary>
     /// <param name="screen">The screen render target</param>
-    void LoadOpenGL(Target screen) { 
+    void LoadOpenGL(Target screen) {
 
         screenID = screen.GenTexture();
 
@@ -116,7 +116,7 @@ public class Window : GameWindow {
         GL.ShaderSource(vertexShader, shaderSource);
         GL.CompileShader(vertexShader);
         GL.GetShader(vertexShader, ShaderParameter.CompileStatus, out int vStatus);
-        
+
 
         if (vStatus != (int)All.True) {
 
@@ -228,7 +228,7 @@ public class Window : GameWindow {
         // Get the new keyboard and mouse states
         var keyboard = KeyboardState;
         var mouse = MouseState;
-        
+
         // Update our static input helping class
         InputHelper.Update(keyboard, mouse);
 
@@ -246,7 +246,7 @@ public class Window : GameWindow {
     /// </summary>
     /// <param name="e">The event arguments</param>
     protected override void OnRenderFrame(FrameEventArgs e) {
-            
+
         base.OnRenderFrame(e);
 
         // If the program has been terminated, close the window
@@ -255,7 +255,7 @@ public class Window : GameWindow {
         // Call all functions that need to be called every frame
         foreach (var function in renderFunctions)
             function.Invoke();
-        
+
         // Convert MyApplication.screen to OpenGL texture
         GL.BindTexture(TextureTarget.Texture2D, screenID);
         GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
@@ -292,6 +292,16 @@ public class Window : GameWindow {
 
         updateFunctions.Add(function);
     }
+    
+    /// <summary>
+    /// Subscribe a function to the list of update functions at a specific place
+    /// </summary>
+    /// <param name="function">The function to be called</param>
+    /// <param name="index">The index to insert the function at</param>
+    public void SubscribeUpdateAt(Action function, int index) {
+
+        updateFunctions.Insert(index, function);
+    }
 
 
     /// <summary>
@@ -301,5 +311,15 @@ public class Window : GameWindow {
     public void SubscribeRender(Action function) {
 
         renderFunctions.Add(function);
+    }
+    
+    /// <summary>
+    /// Subscribe a function to a specific place in the list of render functions
+    /// </summary>
+    /// <param name="function">The function to be called</param>
+    /// <param name="index">The index to insert the function at</param>
+    public void SubscribeRenderAt(Action function, int index) {
+
+        renderFunctions.Insert(index, function);
     }
 }
