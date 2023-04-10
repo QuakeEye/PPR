@@ -16,15 +16,24 @@ public class Shader {
     public ShaderType Type = ShaderType.ComputeShader;
 
     // The source code of the shader
-    // (Currently debating whether this should be stored)
-    // public string Source;
+    private string shaderPath;
 
 
     /// <summary>
     /// Constructor for the shader
     /// Creates a shader from a source code, retrieved from a file path
     /// </summary>
-    public Shader(string shaderPath, int programID) {
+    public Shader(string _shaderPath) {
+
+        // Set the correct shader path
+        shaderPath = _shaderPath;
+    }
+
+
+    /// <summary>
+    /// Function that compiles the shader
+    /// </summary>
+    public void Compile(int programID) {
 
         // Read the source code from the file
         string source = File.ReadAllText(shaderPath);
@@ -38,5 +47,10 @@ public class Shader {
 
         // Attach the shader to the program
         GL.AttachShader(programID, ShaderID);
+
+        // Check if the shader compiled correctly
+        string infoLog = GL.GetShaderInfoLog(ShaderID);
+        if (infoLog != string.Empty)
+            Console.WriteLine(infoLog);
     }
 }

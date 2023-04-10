@@ -91,6 +91,13 @@ public class Window : GameWindow {
         foreach (var function in initFunctions)
             function.Invoke();
 
+        // Initiate the GPU program
+        ProgramID = GL.CreateProgram();
+
+        // Add all the shaders to the GPU program
+        foreach (var shader in Pipeline)
+            shader.Compile(ProgramID);
+
         // Set up the input helper
         InputHelper.PreviousMouseState = MouseState;
         InputHelper.CurrentMouseState = MouseState;

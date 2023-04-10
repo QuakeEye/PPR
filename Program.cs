@@ -8,6 +8,6 @@ class Program {
     /// </summary>
     static void Main() {
 
-        DemoRenderer demo = new DemoRenderer();
+        PPR.Demos.GPU.GPUDemoRenderer demo = new();
     }
 }
