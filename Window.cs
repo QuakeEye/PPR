@@ -52,7 +52,7 @@ public class Window : GameWindow {
 
 
     // Pointer to the opengl program represented by this window instance
-    public int PipelineProgramID { get; private set; }
+    public int ProgramID { get; private set; }
 
     // The GPU Shader pipeline
     public List<Shader> Pipeline { get; private set; } = new List<Shader>();
@@ -90,6 +90,9 @@ public class Window : GameWindow {
         // Call all the functions that were added to the initFunctions list
         foreach (var function in initFunctions)
             function.Invoke();
+
+        // Set up the gpu program
+        SetGPU();
 
         // Set up the input helper
         InputHelper.PreviousMouseState = MouseState;
@@ -160,9 +163,6 @@ public class Window : GameWindow {
             throw new Exception($"Error occurred whilst linking program ({programID}):\n{log}");
         }
 
-        // Set up the gpu program
-        SetGPU();
-
         // The program pipeline has been set up, we can now delete the shaders
         GL.DetachShader(programID, vertexShader);
         GL.DetachShader(programID, fragmentShader);
@@ -197,22 +197,22 @@ public class Window : GameWindow {
     void SetGPU() {
 
         // Initiate the GPU program
-        PipelineProgramID = GL.CreateProgram();
+        ProgramID = GL.CreateProgram();
 
         // Add all the shaders to the GPU program
         foreach (var shader in Pipeline)
-            shader.Compile(PipelineProgramID);
+            shader.Compile(ProgramID);
 
         // Link the GPU program
-        GL.LinkProgram(PipelineProgramID);
+        GL.LinkProgram(ProgramID);
 
         // Check if the GPU program linked correctly
-        GL.GetProgram(PipelineProgramID, GetProgramParameterName.LinkStatus, out int status);
+        GL.GetProgram(ProgramID, GetProgramParameterName.LinkStatus, out int status);
 
         if (status != (int) All.True) {
 
-            string log = GL.GetProgramInfoLog(PipelineProgramID);
-            throw new Exception($"Error occurred whilst linking program ({PipelineProgramID}):\n{log}");
+            string log = GL.GetProgramInfoLog(ProgramID);
+            throw new Exception($"Error occurred whilst linking program ({ProgramID}):\n{log}");
         }
     }
 
@@ -290,7 +290,7 @@ public class Window : GameWindow {
         if (terminated) { Close(); return; }
 
         // Execute the GPU program and pipeline shaders
-        // UseGPU();
+        UseGPU();
 
         // Call all functions that need to be called every frame
         foreach (var function in renderFunctions)
@@ -320,7 +320,7 @@ public class Window : GameWindow {
     void UseGPU() {
 
         // Use the GPU program
-        GL.UseProgram(PipelineProgramID);
+        GL.UseProgram(ProgramID);
 
         // Bind the screen texture to the GPU program and dispatch it
         GL.ActiveTexture(TextureUnit.Texture0);
@@ -344,7 +344,7 @@ public class Window : GameWindow {
                 Console.WriteLine(output[i]);
         }
 
-        Console.WriteLine("Next");
+        // Console.WriteLine("Next");
     }
 
 
