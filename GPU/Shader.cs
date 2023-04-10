@@ -18,15 +18,21 @@ public class Shader {
     // The source code of the shader
     private string shaderPath;
 
+    // The Window owner of this shader
+    private Window window;
+
 
     /// <summary>
     /// Constructor for the shader
     /// Creates a shader from a source code, retrieved from a file path
     /// </summary>
-    public Shader(string _shaderPath) {
+    public Shader(string _shaderPath, Window _window) {
 
         // Set the correct shader path
         shaderPath = _shaderPath;
+
+        // Set the owner window
+        window = _window;
     }
 
 
@@ -52,5 +58,30 @@ public class Shader {
         string infoLog = GL.GetShaderInfoLog(ShaderID);
         if (infoLog != string.Empty)
             Console.WriteLine(infoLog);
+
+        // Set the output texture
+        SetOutputTexture(window.ScreenID);
+    }
+
+
+    /// <summary>
+    /// Function to set the output texture of the shader
+    /// </summary>
+    public void SetOutputTexture(int textureID) {
+
+        // Set up the texture to which will be output
+        GL.ActiveTexture(TextureUnit.Texture0);
+        GL.BindTexture(TextureTarget.Texture2D, textureID);
+        GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, 
+                        new int[] { (int) TextureWrapMode.ClampToEdge });
+        GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,
+                        new int[] { (int) TextureWrapMode.ClampToEdge });
+        GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter,
+                        new int[] { (int) TextureMagFilter.Linear });
+        GL.TexParameterI(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
+                        new int[] { (int) TextureMinFilter.Linear });
+        GL.TexImage2D(  TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba32f, 
+                        window.Screen.Width, window.Screen.Height, 0, PixelFormat.Rgba, 
+                        PixelType.Float, IntPtr.Zero);
     }
 }

@@ -17,7 +17,7 @@ public class GPUDemoRenderer : Renderer {
     public override void Init() { 
 
         // Create a new shader
-        Shader shader = new("Demos/GPU/Demo.comp");
+        Shader shader = new("Demos/GPU/Demo.comp", Window);
 
         // Add the shader to the pipeline, Window will handle the rest
         Window.AddShader(shader);
