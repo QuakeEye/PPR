@@ -10,21 +10,21 @@ namespace PPR;
 public class Renderer {
 
     // Reference to the template window
-    protected Window window;
+    protected Window Window;
 
 
     public Renderer() {
 
         // Create a new window
-        window = new Window(new Vector2i(Settings.Width, Settings.Height));
+        Window = new Window(new Vector2i(Settings.Width, Settings.Height));
         
         // Subscribe to the window's events
-        window.SubscribeInit(Init);
-        window.SubscribeUpdate(Update);
-        window.SubscribeRender(Render);
+        Window.SubscribeInit(Init);
+        Window.SubscribeUpdate(Update);
+        Window.SubscribeRender(Render);
 
         // Start the window
-        window.Run();
+        Window.Run();
     }
 
 

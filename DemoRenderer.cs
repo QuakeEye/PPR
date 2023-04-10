@@ -1,4 +1,5 @@
 using OpenTK;
+using OpenTK.Mathematics;
 using PPR;
 
 
@@ -18,14 +19,11 @@ public class DemoRenderer : Renderer {
 
     public override void Init() { 
 
-        random = new Random();
+        
     }
 
-    public override void Update() { 
+    public override void Update() {
 
-        int x = random.Next(0, window.screen.Width);
-        int y = random.Next(0, window.screen.Height);
-
-        window.screen.Plot(x, y, 0xFF0000);
+        
     }
 }

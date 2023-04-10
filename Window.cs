@@ -4,6 +4,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using PPR.GPU;
 
 namespace PPR;
 
@@ -18,8 +19,8 @@ public class Window : GameWindow {
 
 
     // Texture and ID for per-pixel rendering
-    public Target screen;
-    public int screenID;
+    public Target Screen;
+    public int ScreenID;
 
 
     // List of functions that will be called on app initialisation
@@ -50,6 +51,13 @@ public class Window : GameWindow {
     };
 
 
+    // Pointer to the opengl program represented by this window instance
+    public int ProgramID { get; private set; }
+
+    // The GPU Shader pipeline
+    public List<Shader> Pipeline { get; private set; } = new List<Shader>();
+
+
     /// <summary>
     /// Constructor for the window class
     /// </summary>
@@ -74,10 +82,10 @@ public class Window : GameWindow {
         GL.Disable(EnableCap.DepthTest);
 
         // Initialise the screen render target
-        screen = new Target(Size.X, Size.Y);
+        Screen = new Target(Size.X, Size.Y);
 
         // Load all opengl related pointers, buffers and others
-        LoadOpenGL(screen);
+        LoadOpenGL(Screen);
 
         // Call all the functions that were added to the initFunctions list
         foreach (var function in initFunctions)
@@ -96,7 +104,7 @@ public class Window : GameWindow {
     /// <param name="screen">The screen render target</param>
     void LoadOpenGL(Target screen) {
 
-        screenID = screen.GenTexture();
+        ScreenID = screen.GenTexture();
 
         // Setting up a Modern OpenGL pipeline takes a lot of code
         // Vertex Array Object: will store the meaning of the data in the buffer
@@ -172,7 +180,7 @@ public class Window : GameWindow {
 
         // Connect the texture to the shader uniform variable
         GL.ActiveTexture(TextureUnit.Texture0);
-        GL.BindTexture(TextureTarget.Texture2D, screenID);
+        GL.BindTexture(TextureTarget.Texture2D, ScreenID);
         GL.Uniform1(GL.GetUniformLocation(programID, "pixels"), 0); // Retrieves a location in the fragment shader
 
         if (Settings.Debug)
@@ -188,7 +196,7 @@ public class Window : GameWindow {
         base.OnUnload();
 
         // Called upon app close
-        GL.DeleteTextures(1, ref screenID);
+        GL.DeleteTextures(1, ref ScreenID);
 
         // Close the program
         GL.DeleteProgram(programID);
@@ -209,8 +217,8 @@ public class Window : GameWindow {
         GL.Viewport(0, 0, e.Width, e.Height);   // Set the viewport to the new window size
 
         // Resize the screen render target
-        screen = new Target(e.Width, e.Height);
-        screenID = screen.GenTexture();
+        Screen = new Target(e.Width, e.Height);
+        ScreenID = Screen.GenTexture();
 
         if (Settings.Debug)
             Console.WriteLine($"Window was resized to {e.Width}x{e.Height}");
@@ -257,11 +265,11 @@ public class Window : GameWindow {
             function.Invoke();
 
         // Convert MyApplication.screen to OpenGL texture
-        GL.BindTexture(TextureTarget.Texture2D, screenID);
+        GL.BindTexture(TextureTarget.Texture2D, ScreenID);
         GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
-                        screen.Width, screen.Height, 0,
+                        Screen.Width, Screen.Height, 0,
                         PixelFormat.Bgra,
-                        PixelType.UnsignedByte, screen.Pixels
+                        PixelType.UnsignedByte, Screen.Pixels
                         );
 
         // Draw screen filling quad
@@ -321,5 +329,34 @@ public class Window : GameWindow {
     public void SubscribeRenderAt(Action function, int index) {
 
         renderFunctions.Insert(index, function);
+    }
+
+
+    /// <summary>
+    /// Add a shader to the pipeline
+    /// </summary>
+    /// <param name="shader">The shader to be added</param>
+    public void AddShader(Shader shader) {
+
+        // Attach the shader to the program
+        GL.AttachShader(programID, shader.ShaderID);
+
+        // Add the shader to the list of shaders
+        Pipeline.Add(shader);
+    }
+
+
+    /// <summary>
+    /// Add a shader to the pipeline at a specific place
+    /// </summary>
+    /// <param name="shader">The shader to be added</param>
+    /// <param name="index">The index to insert the shader at</param>
+    public void AddShaderAt(Shader shader, int index) {
+
+        // Attach the shader to the program
+        GL.AttachShader(programID, shader.ShaderID);
+
+        // Add the shader to the list of shaders
+        Pipeline.Insert(index, shader);
     }
 }
