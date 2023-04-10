@@ -25,6 +25,6 @@ public class GPUDemoRenderer : Renderer {
 
     public override void Update() {
 
-        
+
     }
 }
