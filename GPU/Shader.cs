@@ -50,14 +50,10 @@ public class Shader {
         // Compile the shader
         GL.ShaderSource(ShaderID, source);
         GL.CompileShader(ShaderID);
+        Console.WriteLine(GL.GetShaderInfoLog(ShaderID));
 
         // Attach the shader to the program
         GL.AttachShader(programID, ShaderID);
-
-        // Check if the shader compiled correctly
-        string infoLog = GL.GetShaderInfoLog(ShaderID);
-        if (infoLog != string.Empty)
-            Console.WriteLine(infoLog);
 
         // Set the output texture
         SetOutputTexture(window.ScreenID);

@@ -52,7 +52,7 @@ public class Window : GameWindow {
 
 
     // Pointer to the opengl program represented by this window instance
-    public int ProgramID { get; private set; }
+    public int SPPID { get; private set; }
 
     // The GPU Shader pipeline
     public List<Shader> Pipeline { get; private set; } = new List<Shader>();
@@ -84,15 +84,15 @@ public class Window : GameWindow {
         // Initialise the screen render target
         Screen = new Target(Size.X, Size.Y);
 
+        // Set up the gpu program
+        SetGPU();
+
         // Load all opengl related pointers, buffers and others
         LoadOpenGL(Screen);
 
         // Call all the functions that were added to the initFunctions list
         foreach (var function in initFunctions)
             function.Invoke();
-
-        // Set up the gpu program
-        SetGPU();
 
         // Set up the input helper
         InputHelper.PreviousMouseState = MouseState;
@@ -197,23 +197,28 @@ public class Window : GameWindow {
     void SetGPU() {
 
         // Initiate the GPU program
-        ProgramID = GL.CreateProgram();
+        SPPID = GL.CreateProgram();
 
         // Add all the shaders to the GPU program
         foreach (var shader in Pipeline)
-            shader.Compile(ProgramID);
+            shader.Compile(SPPID);
 
         // Link the GPU program
-        GL.LinkProgram(ProgramID);
+        GL.LinkProgram(SPPID);
 
         // Check if the GPU program linked correctly
-        GL.GetProgram(ProgramID, GetProgramParameterName.LinkStatus, out int status);
+        GL.GetProgram(SPPID, GetProgramParameterName.LinkStatus, out int status);
 
         if (status != (int) All.True) {
 
-            string log = GL.GetProgramInfoLog(ProgramID);
-            throw new Exception($"Error occurred whilst linking program ({ProgramID}):\n{log}");
+            string log = GL.GetProgramInfoLog(SPPID);
+            throw new Exception($"Error occurred whilst linking program ({SPPID}):\n{log}");
         }
+
+        // Use the GPU program
+        GL.UseProgram(SPPID);
+        GL.DispatchCompute(Screen.Width, Screen.Height, 1);
+        GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
     }
 
 
@@ -269,12 +274,37 @@ public class Window : GameWindow {
         // Update our static input helping class
         InputHelper.Update(keyboard, mouse);
 
+        // Execute the GPU program and pipeline shaders
+        UseGPU();
+
         // Make sure to call all functions that need to be called every frame
         foreach (var function in updateFunctions)
             function.Invoke();
 
         // Quit the program once escape key has been pressed
         if (keyboard[Keys.Escape]) terminated = true;
+    }
+
+
+    /// <summary>
+    /// This function executes the GPU program and pipeline shaders
+    /// </summary>
+    void UseGPU() {
+
+        // Use the GPU program
+        GL.UseProgram(SPPID);
+
+        // Bind the screen texture to the GPU program and dispatch it
+        GL.ActiveTexture(TextureUnit.Texture0);
+        GL.BindTexture(TextureTarget.Texture2D, ScreenID);
+        GL.DispatchCompute(1, 1, 1);    // This should move to Shader class
+
+        // Wait for the GPU to finish executing the program
+        GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
+
+        // Read the screen texture back to the CPU
+        // GL.BindTexture(TextureTarget.Texture2D, ScreenID);
+        // GL.GetTexImage(TextureTarget.Texture2D, 0, PixelFormat.Bgra, PixelType.UnsignedByte, Screen.Pixels);
     }
 
 
@@ -288,9 +318,6 @@ public class Window : GameWindow {
 
         // If the program has been terminated, close the window
         if (terminated) { Close(); return; }
-
-        // Execute the GPU program and pipeline shaders
-        UseGPU();
 
         // Call all functions that need to be called every frame
         foreach (var function in renderFunctions)
@@ -311,40 +338,6 @@ public class Window : GameWindow {
 
         // Tell OpenTK we're done rendering
         SwapBuffers();
-    }
-
-
-    /// <summary>
-    /// This function executes the GPU program and pipeline shaders
-    /// </summary>
-    void UseGPU() {
-
-        // Use the GPU program
-        GL.UseProgram(ProgramID);
-
-        // Bind the screen texture to the GPU program and dispatch it
-        GL.ActiveTexture(TextureUnit.Texture0);
-        GL.BindTexture(TextureTarget.Texture2D, ScreenID);
-        GL.DispatchCompute(1, 1, 1);    // This should move to Shader class
-
-        // Wait for the GPU to finish executing the program
-        GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
-
-        float[] output = new float[Screen.Width * Screen.Height * 4];
-
-        // Read the screen texture back to the CPU
-        GL.BindImageTexture(0, ScreenID, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba32f);
-        GL.GetTextureImage( ScreenID, 0, PixelFormat.Rgba, PixelType.Float, 
-                            output.Length * sizeof(int), output);
-
-
-        for (int i = 0; i < output.Length; i++) {
-
-            if (output[i] != 0)
-                Console.WriteLine(output[i]);
-        }
-
-        // Console.WriteLine("Next");
     }
 
 
